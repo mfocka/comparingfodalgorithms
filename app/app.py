@@ -14,76 +14,76 @@ from detectors.detector import Detector
 
 MODELNAMES = ["paddlepaddle", "rtdetr","ssdmobilenet","yolov4","yolov8","efficientdet"]
 
-def calc_iou(trueBox, detBox):
-    sX1, sY1, eX1, eY1 = trueBox
-    sX2, sY2, eX2, eY2 = detBox
+# def calc_iou(trueBox, detBox):
+#     sX1, sY1, eX1, eY1 = trueBox
+#     sX2, sY2, eX2, eY2 = detBox
     
-    intersection_width = max(0, min(eX1, eX2) - max(sX1, sX2))
-    intersection_height = max(0, min(eY1, eY2) - max(sY1, sY2))
-    intersection = intersection_width * intersection_height
-    area_trueBox = (eX1 - sX1) * (eY1 - sY1)
-    area_detBox = (eX2 - sX2) * (eY2 - sY2)
-    union = area_trueBox + area_detBox - intersection
+#     intersection_width = max(0, min(eX1, eX2) - max(sX1, sX2))
+#     intersection_height = max(0, min(eY1, eY2) - max(sY1, sY2))
+#     intersection = intersection_width * intersection_height
+#     area_trueBox = (eX1 - sX1) * (eY1 - sY1)
+#     area_detBox = (eX2 - sX2) * (eY2 - sY2)
+#     union = area_trueBox + area_detBox - intersection
 
-    iou = intersection / union if union != 0 else 0
+#     iou = intersection / union if union != 0 else 0
 
-    return iou
+#     return iou
     
-def find_nearest_neighbor(bbox, bboxes):
-    nn = np.argmax([calc_iou(bbox, box) for box in bboxes])
-    return nn, calc_iou(bbox, bboxes[nn])
+# def find_nearest_neighbor(bbox, bboxes):
+#     nn = np.argmax([calc_iou(bbox, box) for box in bboxes])
+#     return nn, calc_iou(bbox, bboxes[nn])
 
-def calc_precision_recall(detections, expectedDetections, iouThreshold: float = 0.35):
-    result = [
-        [0 for _ in range(len(detections))] for _ in range(len(expectedDetections))
-        ]
-    resultNamed = [
-        ["" for _ in range(len(detections))] for _ in range(len(expectedDetections))
-    ]
-    for idE, expectedDetection in enumerate(expectedDetections):
-        nn, iou = find_nearest_neighbor(expectedDetection, detections)
-        if result[idE][nn] < iou and iou >= iouThreshold:
-            result[idE][nn] = iou
+# def calc_precision_recall(detections, expectedDetections, iouThreshold: float = 0.35):
+#     result = [
+#         [0 for _ in range(len(detections))] for _ in range(len(expectedDetections))
+#         ]
+#     resultNamed = [
+#         ["" for _ in range(len(detections))] for _ in range(len(expectedDetections))
+#     ]
+#     for idE, expectedDetection in enumerate(expectedDetections):
+#         nn, iou = find_nearest_neighbor(expectedDetection, detections)
+#         if result[idE][nn] < iou and iou >= iouThreshold:
+#             result[idE][nn] = iou
             
-    for idR, row in enumerate(result):
-        for idC, col in enumerate(row):
-            tdInRow = [colId for colId, val in enumerate(resultNamed[idR]) if val == "TD"]
-            if col == 0:
-                resultNamed[idR][idC] = "MD"
-            elif len(tdInRow) > 0:
-                nId = np.argmax([row[idc] for idc in tdInRow])
-                resultNamed[idR][idC] = "TD"
-            else:
-                resultNamed[idR][idC]
+#     for idR, row in enumerate(result):
+#         for idC, col in enumerate(row):
+#             tdInRow = [colId for colId, val in enumerate(resultNamed[idR]) if val == "TD"]
+#             if col == 0:
+#                 resultNamed[idR][idC] = "MD"
+#             elif len(tdInRow) > 0:
+#                 nId = np.argmax([row[idc] for idc in tdInRow])
+#                 resultNamed[idR][idC] = "TD"
+#             else:
+#                 resultNamed[idR][idC]
             
-    for idD, detection in enumerate(detections):
-        nn, iou = find_nearest_neighbor(detection, expectedDetections)
-        if result[nn][idD] < iou and iou >= iouThreshold:
-            result[nn][idD] = iou
+#     for idD, detection in enumerate(detections):
+#         nn, iou = find_nearest_neighbor(detection, expectedDetections)
+#         if result[nn][idD] < iou and iou >= iouThreshold:
+#             result[nn][idD] = iou
     
     
-    for row in resultNamed:
-        r = ''
-        for col in row:
-            r += f"| {col} |"
-        print(r)
+#     for row in resultNamed:
+#         r = ''
+#         for col in row:
+#             r += f"| {col} |"
+#         print(r)
     
-    for row in result:
-        r = ''
-        for col in row:
-            r += f"| {col:.2f} |"
-        print(r)
+#     for row in result:
+#         r = ''
+#         for col in row:
+#             r += f"| {col:.2f} |"
+#         print(r)
     
         
-    return 0.0, 0.0
+#     return 0.0, 0.0
 
-def check_correctness_detections(detections, expectedDetections):
-    precision, recall = calc_precision_recall(detections, expectedDetections)
-    beta = 2 # recall is considered beta times as important as precision
-    assert beta >= 0
-    f_beta = (1 + beta**2) * ((precision * recall) / ((beta**2*precision) + recall))
+# def check_correctness_detections(detections, expectedDetections):
+#     precision, recall = calc_precision_recall(detections, expectedDetections)
+#     beta = 2 # recall is considered beta times as important as precision
+#     assert beta >= 0
+#     f_beta = (1 + beta**2) * ((precision * recall) / ((beta**2*precision) + recall))
 
-    return f_beta
+#     return f_beta
 
 def update_csv_file(ID, Model, ConfidenceThreshold, AvgWarmUpTime, AvgInferenceTime, AverageDetectionLen, AverageF_BetaScore):
     csv_file_path = "./outputs/logging.csv"
