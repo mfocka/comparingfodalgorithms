@@ -157,7 +157,7 @@ def test_model(model: Detector):
     
 if __name__ == "__main__":
     
-    test_calc_precision_recall()
+    # test_calc_precision_recall()
     ml = Path("./models/")
     for i in range(1,20):
         model = EfficientDet(ml, ml, '.tflite', i/20, onEdge=False, doTpu=False)
