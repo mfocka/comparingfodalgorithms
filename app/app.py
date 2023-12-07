@@ -146,13 +146,32 @@ def run_model(model: Detector, images: List[np.ndarray], imageNames: str, expect
 #     detections = [(0,0,10,10),(5,0,15,5)]
 #     expectedDs = [(0,0,10,10),(4,0,10,5),(0,0,10,5)]
 #     calc_precision_recall(detections, expectedDs)
-    
+def get_images(folders, extensions=['.jpg', '.jpeg', '.png']):
+    images = []
+    image_names = []
+
+    for folder in folders:
+        for root, dirs, files in os.walk(folder):
+            for file in files:
+                if file.lower().endswith(tuple(extensions)):
+                    img_path = os.path.join(root, file)
+                    image_name = img_path.split("inputs/")[1]
+                    image_names.append(image_name.split(".")[0])
+                    img = cv2.imread(img_path)
+                    if img is not None:
+                        images.append(img)
+
+    return images, image_names
 def test_model(model: Detector):
     model.setup_interpreter()
-    name = "OTHER/luggage"
-    luggage = str(Path("inputs/OTHER/luggage.jpg").resolve().absolute())
-    luggageImage = cv2.imread(luggage)
-    res = run_model(model, [luggageImage], [name], [[]])
+    # name = "OTHER/luggage"
+    # luggage = str(Path("inputs/OTHER/luggage.jpg").resolve().absolute())
+    # luggageImage = cv2.imread(luggage)
+    folder = "inputs"
+    folders = [f"{folder}/{location}/" for location in ["BASLER", "OAK", "OTHER"]]
+    images, image_names  = get_images(folders)
+    print(image_names)
+    res = run_model(model, images, folders, image_names)
     print(res)
     
 if __name__ == "__main__":
